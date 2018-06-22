@@ -8,6 +8,7 @@ from numpy import exp
 from numpy import divide
 from numpy import ones
 from numpy import asarray
+from numpy import diag
 
 
 class Activation:
@@ -63,13 +64,23 @@ class Activation:
 
     @staticmethod
     def softmax(netOutput):
-        # Here you have to code the softmax function
-        pass
+        # normalize with max(netOutput), because exp() is not stable
+        netOutput_exp = [exp(i - netOutput.max()) for i in netOutput]
+        sum_netOutput_exp = sum(netOutput_exp)
+        return [i / sum_netOutput_exp for i in netOutput_exp]
         
     @staticmethod
     def softmaxPrime(netOutput):
-        # Here you have to code the softmax function
-        pass
+        # Implementation after explanation on https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative
+        jacobian_matrix = diag(netOutput)
+
+        for i in range(len(jacobian_matrix)):
+            for j in range(len(jacobian_matrix)):
+                if i == j:
+                    jacobian_matrix[i][i] = netOutput[i] * (1 - netOutput[i])
+                else:
+                    jacobian_matrix[i][j] = netOutput[i] * (-netOutput[j])
+        return jacobian_matrix
         
     @staticmethod
     def getActivation(str):
