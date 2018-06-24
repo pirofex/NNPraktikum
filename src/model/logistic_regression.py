@@ -39,7 +39,7 @@ class LogisticRegression(Classifier):
     performances: array of floats
     """
 
-    def __init__(self, train, valid, test, 
+    def __init__(self, train, valid, test,
                  learningRate=0.01, epochs=50,
                  loss='bce'):
 
@@ -49,9 +49,11 @@ class LogisticRegression(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
-        
+
         if loss == 'bce':
             self.loss = BinaryCrossEntropyError()
+        elif loss == 'crossentropy':
+            self.loss = CrossEntropyError()
         elif loss == 'sse':
             self.loss = SumSquaredError()
         elif loss == 'mse':
@@ -63,22 +65,21 @@ class LogisticRegression(Classifier):
         else:
             raise ValueError('There is no predefined loss function ' +
                              'named ' + str)
-                             
-        
+
         # Record the performance of each epoch for later usages
         # e.g. plotting, reporting..
         self.performances = []
 
         # Use a logistic layer as one-neuron classification (output) layer
-        self.layer = LogisticLayer(train.input.shape[1], 1, 
-                                   activation='sigmoid', 
+        self.layer = LogisticLayer(train.input.shape[1], 1,
+                                   activation='sigmoid',
                                    isClassifierLayer=True)
 
         # add bias values ("1"s) at the beginning of all data sets
         self.trainingSet.input = np.insert(self.trainingSet.input, 0, 1,
-                                            axis=1)
+                                           axis=1)
         self.validationSet.input = np.insert(self.validationSet.input, 0, 1,
-                                              axis=1)
+                                             axis=1)
         self.testSet.input = np.insert(self.testSet.input, 0, 1, axis=1)
 
     def train(self, verbose=True):
@@ -115,7 +116,6 @@ class LogisticRegression(Classifier):
 
         for img, label in zip(self.trainingSet.input,
                               self.trainingSet.label):
-
             # Use LogisticLayer to do the job
             # Feed it with inputs
 
@@ -126,7 +126,7 @@ class LogisticRegression(Classifier):
             # Please note the treatment of nextDerivatives and nextWeights
             # in case of an output layer
             self.layer.computeDerivative(self.loss.calculateDerivative(
-                                         label,self.layer.outp), 1.0)
+                label, self.layer.outp), 1.0)
 
             # Update weights in the online learning fashion
             self.layer.updateWeights(self.learningRate)
@@ -171,5 +171,5 @@ class LogisticRegression(Classifier):
         # Remove the bias from input data
         self.trainingSet.input = np.delete(self.trainingSet.input, 0, axis=1)
         self.validationSet.input = np.delete(self.validationSet.input, 0,
-                                              axis=1)
+                                             axis=1)
         self.testSet.input = np.delete(self.testSet.input, 0, axis=1)

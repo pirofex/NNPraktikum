@@ -22,12 +22,20 @@ def main():
                                         data.testSet,
                                         learningRate=0.005,
                                         epochs=30)
-                                        
+    # Original
+    #myLRClassifier = LogisticRegression(data.trainingSet,
+    #                                    data.validationSet,
+    #                                    data.testSet,
+    #                                    learningRate=0.005,
+    #                                    epochs=30)
+
+    # Modified (fun)
     myLRClassifier = LogisticRegression(data.trainingSet,
                                         data.validationSet,
                                         data.testSet,
-                                        learningRate=0.005,
-                                        epochs=30)
+                                        learningRate=0.003,
+                                        epochs=80,
+                                        loss='crossentropy')
                                         
     
     # Report the result #

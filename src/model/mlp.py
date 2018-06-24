@@ -51,6 +51,8 @@ class MultilayerPerceptron(Classifier):
         
         if loss == 'bce':
             self.loss = BinaryCrossEntropyError()
+        elif loss == 'crossentropy':
+            self.loss = CrossEntropyError()
         elif loss == 'sse':
             self.loss = SumSquaredError()
         elif loss == 'mse':
