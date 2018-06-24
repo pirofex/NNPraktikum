@@ -123,7 +123,8 @@ class MultilayerPerceptron(Classifier):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        output_layer_units = self._get_output_layer().outp
+        return self.loss.calculateError(target, output_layer_units)
     
     def _update_weights(self, learningRate):
         """
