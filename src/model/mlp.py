@@ -115,6 +115,13 @@ class MultilayerPerceptron(Classifier):
         # Here you have to propagate forward through the layers
         # And remember the activation values of each layer
         """
+        for layer in self.layers:
+            new_inp = layer.forward(inp)
+            inp = new_inp
+
+        return inp
+
+
         
     def _compute_error(self, target):
         """
