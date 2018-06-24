@@ -130,7 +130,8 @@ class MultilayerPerceptron(Classifier):
         """
         Update the weights of the layers by propagating back the error
         """
-        pass
+        for layer in self.layers:
+            layer.update_weights(learningRate)
         
     def train(self, verbose=True):
         """Train the Multi-layer Perceptrons
