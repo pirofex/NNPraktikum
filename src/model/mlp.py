@@ -157,8 +157,14 @@ class MultilayerPerceptron(Classifier):
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
         # You need to implement something here
+        output_layer = self._feed_forward(test_instance).flatten()
+        index = np.argmax(output_layer)
+
+        print("Output layer: " + str(output_layer))
+        print("Found index: " + str(index))
+
         pass
-        
+
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
