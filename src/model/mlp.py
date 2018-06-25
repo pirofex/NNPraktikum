@@ -1,5 +1,6 @@
 
 import numpy as np
+import logging
 import util.loss_functions as loss_functions
 
 from util.loss_functions import CrossEntropyError
@@ -9,6 +10,12 @@ from model.classifier import Classifier
 from sklearn.metrics import accuracy_score
 
 import sys
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                    level=logging.DEBUG,
+                    stream=sys.stdout)
+
+
 
 class MultilayerPerceptron(Classifier):
     """
@@ -44,7 +51,7 @@ class MultilayerPerceptron(Classifier):
         self.epochs = epochs
         self.outputTask = outputTask  # Either classification or regression
         self.outputActivation = outputActivation
-        self.cost = cost
+        #self.cost = cost
 
         self.trainingSet = train
         self.validationSet = valid
@@ -142,6 +149,7 @@ class MultilayerPerceptron(Classifier):
         """
         for layer in self.layers:
             layer.update_weights(learningRate)
+
         
     def train(self, verbose=True):
         """Train the Multi-layer Perceptrons
@@ -151,9 +159,43 @@ class MultilayerPerceptron(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        pass
+        for epoch in range(self.epochs):
+            if verbose:
+                print("Training epoch {0}/{1}.."
+                      .format(epoch + 1, self.epochs))
+
+            for data, label in zip(self.trainingSet.input,
+                                  self.trainingSet.label):
+                # Use LogisticLayer to do the job
+                # Feed it with inputs
+
+                # Do a forward pass to calculate the output and the error
+                self._feed_forward(data)
 
 
+                # Compute the derivatives w.r.t to the error
+                # Please note the treatment of nextDerivatives and nextWeights
+                # in case of an output layer
+                rev_layers = self.layers.reverse()
+                next_layer = rev_layers.pop()
+                next_delta = self._get_output_layer().computeDerivative(self.loss.calculateDerivative(
+                    label, self._get_output_layer().outp), 1.0)
+                for layer in rev_layers:
+                    next_delta = layer.computeDerivative(next_delta, next_layer.weights)
+                    next_layer = layer
+
+                # Update weights in the online learning fashion
+                self._update_weights(self.learningRate)
+
+            if verbose:
+                accuracy = accuracy_score(self.validationSet.label,
+                                          self.evaluate(self.validationSet))
+                # Record the performance of each epoch for later usages
+                # e.g. plotting, reporting..
+                self.performances.append(accuracy)
+                print("Accuracy on validation: {0:.2f}%"
+                      .format(accuracy * 100))
+                print("-----------------------------")
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
