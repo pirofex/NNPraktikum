@@ -1,5 +1,6 @@
 
 import numpy as np
+import util.loss_functions as loss_functions
 
 from util.loss_functions import CrossEntropyError
 from model.logistic_layer import LogisticLayer
@@ -48,19 +49,19 @@ class MultilayerPerceptron(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
-        
+
         if loss == 'bce':
-            self.loss = BinaryCrossEntropyError()
+            self.loss = loss_functions.BinaryCrossEntropyError()
         elif loss == 'crossentropy':
-            self.loss = CrossEntropyError()
+            self.loss = loss_functions.CrossEntropyError()
         elif loss == 'sse':
-            self.loss = SumSquaredError()
+            self.loss = loss_functions.SumSquaredError()
         elif loss == 'mse':
-            self.loss = MeanSquaredError()
+            self.loss = loss_functions.MeanSquaredError()
         elif loss == 'different':
-            self.loss = DifferentError()
+            self.loss = loss_functions.DifferentError()
         elif loss == 'absolute':
-            self.loss = AbsoluteError()
+            self.loss = loss_functions.AbsoluteError()
         else:
             raise ValueError('There is no predefined loss function ' +
                              'named ' + str)
@@ -76,12 +77,12 @@ class MultilayerPerceptron(Classifier):
 
         # Input layer
         inputActivation = "sigmoid"
-        self.layers.append(LogisticLayer(train.input.shape[1], 128, 
+        self.layers.append(LogisticLayer(train.input.shape[1], 128,
                            None, inputActivation, False))
 
         # Output layer
         outputActivation = "softmax"
-        self.layers.append(LogisticLayer(128, 10, 
+        self.layers.append(LogisticLayer(128, 10,
                            None, outputActivation, True))
 
         self.inputWeights = inputWeights
@@ -122,7 +123,7 @@ class MultilayerPerceptron(Classifier):
         return inp
 
 
-        
+
     def _compute_error(self, target):
         """
         Compute the total error of the network (error terms from the output layer)
@@ -163,7 +164,7 @@ class MultilayerPerceptron(Classifier):
         print("Output layer: " + str(output_layer))
         print("Found index: " + str(index))
 
-        pass
+        return index
 
 
     def evaluate(self, test=None):
