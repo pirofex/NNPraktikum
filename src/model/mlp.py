@@ -125,9 +125,10 @@ class MultilayerPerceptron(Classifier):
         """
         for layer in self.layers:
             new_inp = layer.forward(inp)
-            inp = new_inp
+            #inp = new_inp
+            inp = np.insert(new_inp, 0, 1, axis=0)
 
-        return inp
+        return new_inp
 
 
 
@@ -140,8 +141,9 @@ class MultilayerPerceptron(Classifier):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
+        target_vector = np.insert(np.zeros(9), target, 1)
         output_layer_units = self._get_output_layer().outp
-        return self.loss.calculateError(target, output_layer_units)
+        return self.loss.calculateError(target_vector, output_layer_units)
     
     def _update_weights(self, learningRate):
         """
@@ -176,13 +178,13 @@ class MultilayerPerceptron(Classifier):
                 # Compute the derivatives w.r.t to the error
                 # Please note the treatment of nextDerivatives and nextWeights
                 # in case of an output layer
-                rev_layers = self.layers.reverse()
-                next_layer = rev_layers.pop()
+                target_vector = np.insert(np.zeros(9), label, 1)
                 next_delta = self._get_output_layer().computeDerivative(self.loss.calculateDerivative(
-                    label, self._get_output_layer().outp), 1.0)
-                for layer in rev_layers:
-                    next_delta = layer.computeDerivative(next_delta, next_layer.weights)
-                    next_layer = layer
+                    target_vector, self._get_output_layer().outp), 1.0)
+                next_layer = self._get_output_layer()
+                for i in range(2,(self.layers.__len__()+1)):
+                    next_delta = self._get_layer(-i).computeDerivative(next_delta, next_layer.weights)
+                    next_layer = self._get_layer(-i)
 
                 # Update weights in the online learning fashion
                 self._update_weights(self.learningRate)
