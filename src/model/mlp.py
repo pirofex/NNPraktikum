@@ -125,9 +125,10 @@ class MultilayerPerceptron(Classifier):
         """
         for layer in self.layers:
             new_inp = layer.forward(inp)
-            #inp = new_inp
+            #inputs into layers require a leading 1 to represent the layer's bias
             inp = np.insert(new_inp, 0, 1, axis=0)
 
+        #return the input without the bias for the output layer for the softmax to work
         return new_inp
 
 
@@ -141,7 +142,9 @@ class MultilayerPerceptron(Classifier):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        target_vector = np.insert(np.zeros(9), target, 1)
+        #the target vector must be a vector of size 10 representing the possible digits, with taget[label] containing
+        # one, the rest being zero
+        target_vector = np.insert(np.zeros(9), target, 1) #
         output_layer_units = self._get_output_layer().outp
         return self.loss.calculateError(target_vector, output_layer_units)
     
@@ -149,6 +152,9 @@ class MultilayerPerceptron(Classifier):
         """
         Update the weights of the layers by propagating back the error
         """
+
+        #backpropagation should probably be done here
+
         for layer in self.layers:
             layer.update_weights(learningRate)
 
@@ -175,14 +181,17 @@ class MultilayerPerceptron(Classifier):
                 self._feed_forward(data)
 
 
-                # Compute the derivatives w.r.t to the error
-                # Please note the treatment of nextDerivatives and nextWeights
-                # in case of an output layer
+                #calculate the target vector -> see calculate_error
                 target_vector = np.insert(np.zeros(9), label, 1)
+                #compute error in relation to the target input and calculate weight deltas. For more information see the
+                # compute derivative function in logistic_layer
                 next_delta = self._get_output_layer().computeDerivative(self.loss.calculateDerivative(
                     target_vector, self._get_output_layer().outp), 1.0)
                 next_layer = self._get_output_layer()
+                #reverse iterate over the layers, skipping the output layer (layers(-1)) since it already has been
+                # handled separately
                 for i in range(2,(self.layers.__len__()+1)):
+                    #back propagation for each layer using weights and derivatives of the previous one
                     next_delta = self._get_layer(-i).computeDerivative(next_delta, next_layer.weights)
                     next_layer = self._get_layer(-i)
 
