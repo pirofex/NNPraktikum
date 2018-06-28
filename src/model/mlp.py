@@ -111,6 +111,15 @@ class MultilayerPerceptron(Classifier):
     def _get_output_layer(self):
         return self._get_layer(-1)
 
+    def valueToVector(self, vector, value, function):
+        out = np.ndarray(np.shape(vector))
+        for i in range(1, np.size(vector)):
+            if i != value:
+                out[i] = function(0, vector[i])
+            else:
+                out[i] = function(1, vector[i])
+        return out
+
     def _feed_forward(self, inp):
         """
         Do feed forward through the layers of the network
@@ -125,10 +134,10 @@ class MultilayerPerceptron(Classifier):
         """
         for layer in self.layers:
             new_inp = layer.forward(inp)
-            #inputs into layers require a leading 1 to represent the layer's bias
+            # inputs into layers require a leading 1 to represent the layer's bias
             inp = np.insert(new_inp, 0, 1, axis=0)
 
-        #return the input without the bias for the output layer for the softmax to work
+        # return the input without the bias for the output layer for the softmax to work
         return new_inp
 
 
@@ -142,21 +151,20 @@ class MultilayerPerceptron(Classifier):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        #the target vector must be a vector of size 10 representing the possible digits, with taget[label] containing
-        # one, the rest being zero
-        target_vector = np.insert(np.zeros(9), target, 1) #
-        output_layer_units = self._get_output_layer().outp
-        return self.loss.calculateError(target_vector, output_layer_units)
+        # the target is only one for the correct label, otherwise zero
+        outp = self._get_output_layer().outp
+        return self.valueToVector(outp, target, self.loss.calculateError())
+
     
     def _update_weights(self, learningRate):
         """
         Update the weights of the layers by propagating back the error
         """
 
-        #backpropagation should probably be done here
+        # backpropagation should probably be done here
 
         for layer in self.layers:
-            layer.update_weights(learningRate)
+            layer.updateWeights(learningRate)
 
         
     def train(self, verbose=True):
@@ -171,7 +179,7 @@ class MultilayerPerceptron(Classifier):
             if verbose:
                 print("Training epoch {0}/{1}.."
                       .format(epoch + 1, self.epochs))
-
+                set = 0
             for data, label in zip(self.trainingSet.input,
                                   self.trainingSet.label):
                 # Use LogisticLayer to do the job
@@ -179,45 +187,43 @@ class MultilayerPerceptron(Classifier):
 
                 # Do a forward pass to calculate the output and the error
                 self._feed_forward(data)
-
-
-                #calculate the target vector -> see calculate_error
-                target_vector = np.insert(np.zeros(9), label, 1)
-                #compute error in relation to the target input and calculate weight deltas. For more information see the
+                outp = self._get_output_layer().outp
+                # compute error in relation to the target input and calculate weight deltas. For more information see the
                 # compute derivative function in logistic_layer
-                next_delta = self._get_output_layer().computeDerivative(self.loss.calculateDerivative(
-                    target_vector, self._get_output_layer().outp), 1.0)
+                next_delta = self._get_output_layer().computeDerivative((self.valueToVector(
+                    outp, label, self.loss.calculateDerivative)), 1.0)
                 next_layer = self._get_output_layer()
-                #reverse iterate over the layers, skipping the output layer (layers(-1)) since it already has been
+                # reverse iterate over the layers, skipping the output layer (layers(-1)) since it already has been
                 # handled separately
                 for i in range(2,(self.layers.__len__()+1)):
-                    #back propagation for each layer using weights and derivatives of the previous one
-                    next_delta = self._get_layer(-i).computeDerivative(next_delta, next_layer.weights)
+                    # back propagation for each layer using weights and derivatives of the previous one
+                    next_delta = self._get_layer(-i).computeDerivative(next_delta, np.transpose(next_layer.weights[1:]))
                     next_layer = self._get_layer(-i)
 
                 # Update weights in the online learning fashion
                 self._update_weights(self.learningRate)
+                #print("Set: %i", set)
+                set += 1
+
 
             if verbose:
-                accuracy = accuracy_score(self.validationSet.label,
-                                          self.evaluate(self.validationSet))
+                accuracy = accuracy_score(self.evaluate(self.validationSet.input),
+                                          self.validationSet.label)
                 # Record the performance of each epoch for later usages
                 # e.g. plotting, reporting..
                 self.performances.append(accuracy)
                 print("Accuracy on validation: {0:.2f}%"
-                      .format(accuracy * 100))
+                          .format(accuracy * 100))
+                #print(self.layers[0].weights)
+                #print(self.layers[1].weights)
                 print("-----------------------------")
+
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
         # You need to implement something here
-        output_layer = self._feed_forward(test_instance).flatten()
-        index = np.argmax(output_layer)
-
-        print("Output layer: " + str(output_layer))
-        print("Found index: " + str(index))
-
-        return index
+        out = self._feed_forward(test_instance)
+        return out.index(max(out))
 
 
     def evaluate(self, test=None):

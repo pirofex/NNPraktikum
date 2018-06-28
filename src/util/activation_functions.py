@@ -4,10 +4,11 @@
 Activation functions which can be used within neurons.
 """
 
-from numpy import exp
+from numpy import exp, transpose, matrix, add
 from numpy import divide
 from numpy import ones
 from numpy import asarray
+from numpy import dot
 from numpy import diag
 
 
@@ -29,7 +30,7 @@ class Activation:
     def sigmoidPrime(netOutput):
         # Here you have to code the derivative of sigmoid function
         # netOutput.*(1-netOutput)
-        return netOutput * (1.0 - netOutput)
+        return dot(transpose(matrix(netOutput)), add(1,-matrix(netOutput)))
 
     @staticmethod
     def tanh(netOutput):
@@ -65,14 +66,20 @@ class Activation:
     @staticmethod
     def softmax(netOutput):
         # normalize with max(netOutput), because exp() is not stable
-        netOutput_exp = [exp(i - netOutput.max()) for i in netOutput]
+        netOutput_exp = [exp(i - max(netOutput)) for i in netOutput]
         sum_netOutput_exp = sum(netOutput_exp)
         return [i / sum_netOutput_exp for i in netOutput_exp]
         
     @staticmethod
     def softmaxPrime(netOutput):
         # Implementation after explanation on https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative
-        jacobian_matrix = diag(netOutput)
+        outputPrime = map(lambda x: exp(x + max(netOutput)), netOutput)
+        outputPrime = dot(outputPrime, 1/sum(outputPrime))
+        jacobian = dot(transpose(outputPrime), dot(outputPrime, -1))
+        jacobian += diag(outputPrime)
+        return jacobian
+
+        """jacobian_matrix = diag(netOutput)
 
         for i in range(len(jacobian_matrix)):
             for j in range(len(jacobian_matrix)):
@@ -80,7 +87,7 @@ class Activation:
                     jacobian_matrix[i][i] = netOutput[i] * (1 - netOutput[i])
                 else:
                     jacobian_matrix[i][j] = netOutput[i] * (-netOutput[j])
-        return jacobian_matrix
+        return jacobian_matrix """""
         
     @staticmethod
     def getActivation(str):

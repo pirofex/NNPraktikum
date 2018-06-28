@@ -125,7 +125,7 @@ class LogisticLayer():
         # Or even more general: doesn't care which activation function is used
         # dado: derivative of activation function w.r.t the output
         dado = self.activationDerivative(self.outp)
-        self.deltas = (dado * np.dot(next_derivatives, next_weights))
+        self.deltas = np.atleast_2d(np.dot(np.dot(next_derivatives, next_weights), dado))
 
         # Or you can explicitly calculate the derivatives for two cases
         # Page 40 Back-propagation slides
@@ -147,9 +147,9 @@ class LogisticLayer():
         # weight updating as gradient descent principle
         for neuron in range(0, self.nOut):
             self.weights[:, neuron] -= (learningRate *
-                                        self.deltas[neuron] *
+                                        self.deltas[0,neuron] *
                                         self.inp)
-        
+
 
     def _fire(self, inp):
         return self.activation(np.dot(inp, self.weights))

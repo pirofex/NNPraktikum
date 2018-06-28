@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from data.mnist_seven import MNISTSeven
+from model.mlp import MultilayerPerceptron
 from model.stupid_recognizer import StupidRecognizer
 from model.perceptron import Perceptron
 from model.logistic_regression import LogisticRegression
@@ -30,7 +31,7 @@ def main():
     #                                    epochs=30)
 
     # Modified (fun)
-    myLRClassifier = LogisticRegression(data.trainingSet,
+    myLRClassifier = MultilayerPerceptron(data.trainingSet,
                                         data.validationSet,
                                         data.testSet,
                                         learningRate=0.003,
