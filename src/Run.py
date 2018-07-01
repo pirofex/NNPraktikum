@@ -14,6 +14,9 @@ from report.performance_plot import PerformancePlot
 def main():
     data = MNISTSeven("../data/mnist_seven.csv", 3000, 1000, 1000,
                                                     oneHot=True)
+    # import data retaining labels (oneHot turns labels to booleans)
+    dataMLP = MNISTSeven("../data/mnist_seven.csv", 3000, 1000, 1000,
+                                                    oneHot=False)
     myStupidClassifier = StupidRecognizer(data.trainingSet,
                                           data.validationSet,
                                           data.testSet)
@@ -31,9 +34,17 @@ def main():
     #                                    epochs=30)
 
     # Modified (fun)
-    myLRClassifier = MultilayerPerceptron(data.trainingSet,
+    myLRClassifier = LogisticRegression(data.trainingSet,
                                         data.validationSet,
                                         data.testSet,
+                                        learningRate=0.003,
+                                        epochs=80,
+                                        loss='crossentropy')
+
+    # Multilayered Perceptron with labeled data
+    myMLPClassifier = MultilayerPerceptron(dataMLP.trainingSet,
+                                        dataMLP.validationSet,
+                                        dataMLP.testSet,
                                         learningRate=0.003,
                                         epochs=80,
                                         loss='crossentropy')
@@ -59,11 +70,16 @@ def main():
     myLRClassifier.train()
     print("Done..")
 
+    print("\nMultilayered Perceptron has been training..")
+    myMLPClassifier.train()
+    print("Done..")
+
     # Do the recognizer
     # Explicitly specify the test set to be evaluated
     stupidPred = myStupidClassifier.evaluate()
     perceptronPred = myPerceptronClassifier.evaluate()
     lrPred = myLRClassifier.evaluate()
+    MLPPred = myMLPClassifier.evaluate()
     
     # Report the result
     print("=========================")
@@ -80,11 +96,15 @@ def main():
     print("\nResult of the Logistic Regression recognizer:")
     #evaluator.printComparison(data.testSet, lrPred)    
     evaluator.printAccuracy(data.testSet, lrPred)
+
+    print("\nResult of the Multilayered Perceptron recognizer:")
+    # evaluator.printComparison(data.testSet, lrPred)
+    evaluator.printAccuracy(dataMLP.testSet, MLPPred)
     
     # Draw
-    plot = PerformancePlot("Logistic Regression validation")
-    plot.draw_performance_epoch(myLRClassifier.performances,
-                                myLRClassifier.epochs)
+    plot = PerformancePlot("Multilayered Perceptron validation")
+    plot.draw_performance_epoch(myMLPClassifier.performances,
+                                myMLPClassifier.epochs)
     
     
 if __name__ == '__main__':

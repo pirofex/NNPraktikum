@@ -30,7 +30,9 @@ class Activation:
     def sigmoidPrime(netOutput):
         # Here you have to code the derivative of sigmoid function
         # netOutput.*(1-netOutput)
-        return dot(transpose(matrix(netOutput)), add(1,-matrix(netOutput)))
+
+        # tried to used vector multiplication, should work
+        return dot(transpose(matrix(netOutput)), add(1,matrix((-1)*netOutput)))
 
     @staticmethod
     def tanh(netOutput):
@@ -73,9 +75,13 @@ class Activation:
     @staticmethod
     def softmaxPrime(netOutput):
         # Implementation after explanation on https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative
+        # turns all the vectors entries to e^(entry + max)
         outputPrime = map(lambda x: exp(x + max(netOutput)), netOutput)
+        # divides each entry by the sum of all entries
         outputPrime = dot(outputPrime, 1/sum(outputPrime))
+        # multiplies the vectors so we get the correct entries except for the diagonal
         jacobian = dot(transpose(outputPrime), dot(outputPrime, -1))
+        # fix the diagonal so we get the correct derivative
         jacobian += diag(outputPrime)
         return jacobian
 

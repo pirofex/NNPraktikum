@@ -112,6 +112,21 @@ class MultilayerPerceptron(Classifier):
         return self._get_layer(-1)
 
     def valueToVector(self, vector, value, function):
+        """
+        Used to compare every entry of vector with the specified function to zero except for the entry at index
+        value, which is compared to one. used in error calculation
+
+        Parameters
+        ----------
+        vector : list-like
+            a vector usually containing doubles to be compared
+        value : int
+            the index of the entry that is compared to one
+        function : method
+            a method calculating the error between the vector entries and one or zero
+
+        # used to make error calculation easier
+        """
         out = np.ndarray(np.shape(vector))
         for i in range(1, np.size(vector)):
             if i != value:
@@ -161,7 +176,7 @@ class MultilayerPerceptron(Classifier):
         Update the weights of the layers by propagating back the error
         """
 
-        # backpropagation should probably be done here
+        # backpropagation should probably be done here, meanwhile in train()
 
         for layer in self.layers:
             layer.updateWeights(learningRate)
@@ -179,15 +194,11 @@ class MultilayerPerceptron(Classifier):
             if verbose:
                 print("Training epoch {0}/{1}.."
                       .format(epoch + 1, self.epochs))
-                set = 0
             for data, label in zip(self.trainingSet.input,
                                   self.trainingSet.label):
-                # Use LogisticLayer to do the job
-                # Feed it with inputs
 
                 # Do a forward pass to calculate the output and the error
-                self._feed_forward(data)
-                outp = self._get_output_layer().outp
+                outp = self._feed_forward(data)
                 # compute error in relation to the target input and calculate weight deltas. For more information see the
                 # compute derivative function in logistic_layer
                 next_delta = self._get_output_layer().computeDerivative((self.valueToVector(
@@ -202,8 +213,6 @@ class MultilayerPerceptron(Classifier):
 
                 # Update weights in the online learning fashion
                 self._update_weights(self.learningRate)
-                #print("Set: %i", set)
-                set += 1
 
 
             if verbose:
@@ -223,6 +232,7 @@ class MultilayerPerceptron(Classifier):
         # Classify an instance given the model of the classifier
         # You need to implement something here
         out = self._feed_forward(test_instance)
+        # return the index of the maximum, the index representing the number recognized
         return out.index(max(out))
 
 
