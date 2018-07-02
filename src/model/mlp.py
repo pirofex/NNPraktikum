@@ -1,4 +1,3 @@
-
 import numpy as np
 import logging
 import util.loss_functions as loss_functions
@@ -14,7 +13,6 @@ import sys
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
                     stream=sys.stdout)
-
 
 
 class MultilayerPerceptron(Classifier):
@@ -51,7 +49,7 @@ class MultilayerPerceptron(Classifier):
         self.epochs = epochs
         self.outputTask = outputTask  # Either classification or regression
         self.outputActivation = outputActivation
-        #self.cost = cost
+        # self.cost = cost
 
         self.trainingSet = train
         self.validationSet = valid
@@ -85,22 +83,21 @@ class MultilayerPerceptron(Classifier):
         # Input layer
         inputActivation = "sigmoid"
         self.layers.append(LogisticLayer(train.input.shape[1], 128,
-                           None, inputActivation, False))
+                                         None, inputActivation, False))
 
         # Output layer
         outputActivation = "softmax"
         self.layers.append(LogisticLayer(128, 10,
-                           None, outputActivation, True))
+                                         None, outputActivation, True))
 
         self.inputWeights = inputWeights
 
         # add bias values ("1"s) at the beginning of all data sets
         self.trainingSet.input = np.insert(self.trainingSet.input, 0, 1,
-                                            axis=1)
+                                           axis=1)
         self.validationSet.input = np.insert(self.validationSet.input, 0, 1,
-                                              axis=1)
+                                             axis=1)
         self.testSet.input = np.insert(self.testSet.input, 0, 1, axis=1)
-
 
     def _get_layer(self, layer_index):
         return self.layers[layer_index]
@@ -155,8 +152,6 @@ class MultilayerPerceptron(Classifier):
         # return the input without the bias for the output layer for the softmax to work
         return new_inp
 
-
-
     def _compute_error(self, target):
         """
         Compute the total error of the network (error terms from the output layer)
@@ -170,7 +165,6 @@ class MultilayerPerceptron(Classifier):
         outp = self._get_output_layer().outp
         return self.valueToVector(outp, target, self.loss.calculateError())
 
-    
     def _update_weights(self, learningRate):
         """
         Update the weights of the layers by propagating back the error
@@ -181,7 +175,6 @@ class MultilayerPerceptron(Classifier):
         for layer in self.layers:
             layer.updateWeights(learningRate)
 
-        
     def train(self, verbose=True):
         """Train the Multi-layer Perceptrons
 
@@ -195,25 +188,25 @@ class MultilayerPerceptron(Classifier):
                 print("Training epoch {0}/{1}.."
                       .format(epoch + 1, self.epochs))
             for data, label in zip(self.trainingSet.input,
-                                  self.trainingSet.label):
+                                   self.trainingSet.label):
 
                 # Do a forward pass to calculate the output and the error
                 outp = self._feed_forward(data)
                 # compute error in relation to the target input and calculate weight deltas. For more information see the
                 # compute derivative function in logistic_layer
-                next_delta = self._get_output_layer().computeDerivative((self.valueToVector(
-                    outp, label, self.loss.calculateDerivative)), 1.0)
+                next_delta = (self._get_output_layer()).computeDerivative(
+                    (self.valueToVector(outp, label, self.loss.calculateDerivative)), 1.0)
                 next_layer = self._get_output_layer()
                 # reverse iterate over the layers, skipping the output layer (layers(-1)) since it already has been
                 # handled separately
-                for i in range(2,(self.layers.__len__()+1)):
+                for i in range(2, (self.layers.__len__() + 1)):
+                    # TODO i is always 2?! Better: for layer in reversed(self.layers)?
                     # back propagation for each layer using weights and derivatives of the previous one
                     next_delta = self._get_layer(-i).computeDerivative(next_delta, np.transpose(next_layer.weights[1:]))
                     next_layer = self._get_layer(-i)
 
                 # Update weights in the online learning fashion
                 self._update_weights(self.learningRate)
-
 
             if verbose:
                 accuracy = accuracy_score(self.evaluate(self.validationSet.input),
@@ -222,11 +215,10 @@ class MultilayerPerceptron(Classifier):
                 # e.g. plotting, reporting..
                 self.performances.append(accuracy)
                 print("Accuracy on validation: {0:.2f}%"
-                          .format(accuracy * 100))
-                #print(self.layers[0].weights)
-                #print(self.layers[1].weights)
+                      .format(accuracy * 100))
+                # print(self.layers[0].weights)
+                # print(self.layers[1].weights)
                 print("-----------------------------")
-
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
@@ -234,7 +226,6 @@ class MultilayerPerceptron(Classifier):
         out = self._feed_forward(test_instance)
         # return the index of the maximum, the index representing the number recognized
         return out.index(max(out))
-
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -259,5 +250,5 @@ class MultilayerPerceptron(Classifier):
         # Remove the bias from input data
         self.trainingSet.input = np.delete(self.trainingSet.input, 0, axis=1)
         self.validationSet.input = np.delete(self.validationSet.input, 0,
-                                              axis=1)
+                                             axis=1)
         self.testSet.input = np.delete(self.testSet.input, 0, axis=1)
