@@ -149,9 +149,9 @@ class LogisticLayer():
         # weight updating as gradient descent principle
         for neuron in range(0, self.nOut):
             # indexing of deltas has been adapted to handle the now matrix shaped deltas
-            self.weights[:, neuron] -= (learningRate *
-                                        self.deltas[0,neuron] *
-                                        self.inp)
+            self.weights[:, neuron] += (learningRate *
+                                        self.deltas[0, neuron] *
+                                        self.inp)[0]
 
 
     def _fire(self, inp):
