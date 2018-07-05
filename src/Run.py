@@ -41,7 +41,7 @@ def main():
                                            dataMLP.validationSet,
                                            dataMLP.testSet,
                                            learningRate=0.005,
-                                           epochs=50,
+                                           epochs=150,
                                            loss="crossentropy")
 
     # Report the result #

@@ -22,7 +22,7 @@ class MultilayerPerceptron(Classifier):
 
     def __init__(self, train, valid, test, layers=None, inputWeights=None,
                  outputTask='classification', outputActivation='softmax',
-                 loss='bce', learningRate=0.01, epochs=50):
+                 loss='bce', learningRate=0.005, epochs=150):
 
         """
         A MNIST recognizer based on multi-layer perceptron algorithm
@@ -85,8 +85,8 @@ class MultilayerPerceptron(Classifier):
         self.layers.append(LogisticLayer(train.input.shape[1], 128,
                                          None, inputActivation, False))
 
-        # self.layers.append(LogisticLayer(128, 128,
-        #                                  None, "sigmoid", False))
+        #self.layers.append(LogisticLayer(128, 128,
+        #                                 None, "sigmoid", False))
 
         # Output layer
         outputActivation = "softmax"
@@ -148,9 +148,9 @@ class MultilayerPerceptron(Classifier):
         # And remember the activation values of each layer
         """
         for layer in self.layers:
-            new_inp = layer.forward(np.atleast_2d(inp))
+            new_inp = layer.forward(inp)
             # inputs into layers require a leading 1 to represent the layer's bias
-            inp = np.insert(new_inp, 0, 1, axis=1)
+            inp = np.insert(new_inp, 0, 1)
 
         # return the input without the bias for the output layer for the softmax to work
         return new_inp
@@ -196,19 +196,21 @@ class MultilayerPerceptron(Classifier):
 
                 # Do a forward pass to calculate the output and the error
                 outp = self._feed_forward(data)
-                target_vec = np.insert(np.zeros((1, outp.size-1)), label, 1, axis=1)
-                pred = np.argmax(outp, axis=1)
+                target_vec = np.insert(np.zeros(outp.size-1), label, 1)
+                pred = np.argmax(outp)
                 # compute error in relation to the target input and calculate weight deltas. For more information see the
                 # compute derivative function in logistic_layer
-                next_delta = (self._get_output_layer()).computeDerivative(
-                    (self.loss.calculateDerivative(target_vec,outp)), 1.0)
                 next_layer = self._get_output_layer()
+                next_layer.deltas = outp - target_vec
+                next_delta = next_layer.deltas
+                #next_delta = (self._get_output_layer()).computeDerivative(
+                #    (self.loss.calculateDerivative(target_vec,outp)), 1.0)
                 # reverse iterate over the layers, skipping the output layer (layers(-1)) since it already has been
                 # handled separately
                 for i in range(2, (self.layers.__len__() + 1)):
                     # TODO i is always 2?! Better: for layer in reversed(self.layers)?
                     # back propagation for each layer using weights and derivatives of the previous one
-                    next_delta = self._get_layer(-i).computeDerivative(next_delta, np.transpose(next_layer.weights[1:]))
+                    next_delta = self._get_layer(-i).computeDerivative(next_layer.weights[1:], next_delta)
                     next_layer = self._get_layer(-i)
 
                 # Update weights in the online learning fashion
@@ -230,7 +232,7 @@ class MultilayerPerceptron(Classifier):
         # You need to implement something here
         out = self._feed_forward(test_instance)
         # return the index of the maximum, the index representing the number recognized
-        return np.argmax(out, axis=1)
+        return np.argmax(out)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.

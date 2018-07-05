@@ -4,7 +4,7 @@
 Activation functions which can be used within neurons.
 """
 
-from numpy import exp, transpose, matrix, add
+from numpy import exp, transpose, matrix, add, atleast_2d
 from numpy import divide
 from numpy import ones
 from numpy import asarray
@@ -33,7 +33,7 @@ class Activation:
         # netOutput.*(1-netOutput)
 
         # tried to used vector multiplication, should work
-        return repmat(map(lambda x: x*(1 - x), netOutput), netOutput.shape[1], 1)
+        return netOutput * (1 - netOutput)
         # return dot(transpose(netOutput), 1 - netOutput)
 
     @staticmethod
@@ -79,9 +79,8 @@ class Activation:
     def softmaxPrime(netOutput):
         # Implementation after explanation on https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative
         # multiplies the vectors so we get the correct entries except for the diagonal
-        jacobian = dot(transpose(netOutput), dot(netOutput, -1))
+        jacobian = dot(transpose(atleast_2d(netOutput)), atleast_2d(netOutput)) - diag(netOutput)
         # fix the diagonal so we get the correct derivative
-        jacobian += diag(netOutput[0])
         return jacobian
 
         """jacobian_matrix = diag(netOutput)
