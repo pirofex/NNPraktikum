@@ -40,8 +40,8 @@ def main():
     myMLPClassifier = MultilayerPerceptron(dataMLP.trainingSet,
                                            dataMLP.validationSet,
                                            dataMLP.testSet,
-                                           learningRate=0.005,
-                                           epochs=150,
+                                           learningRate=0.01,
+                                           epochs=25,
                                            loss="crossentropy")
 
     # Report the result #
