@@ -53,15 +53,15 @@ def main():
     print("Training..")
 
     print("\nStupid Classifier has been training..")
-    # myStupidClassifier.train()
+    myStupidClassifier.train()
     print("Done..")
 
     print("\nPerceptron has been training..")
-    # myPerceptronClassifier.train()
+    myPerceptronClassifier.train()
     print("Done..")
 
     print("\nLogistic Regression has been training..")
-    # myLRClassifier.train()
+    myLRClassifier.train()
     print("Done..")
 
     print("\nMultilayered Perceptron has been training..")
