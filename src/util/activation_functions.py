@@ -4,12 +4,13 @@
 Activation functions which can be used within neurons.
 """
 
-from numpy import exp, transpose, matrix, add
+from numpy import exp, transpose, matrix, add, atleast_2d
 from numpy import divide
 from numpy import ones
 from numpy import asarray
 from numpy import dot
 from numpy import diag
+from numpy.matlib import repmat
 
 
 class Activation:
@@ -32,7 +33,8 @@ class Activation:
         # netOutput.*(1-netOutput)
 
         # tried to used vector multiplication, should work
-        return dot(transpose(matrix(netOutput)), add(1,matrix((-1)*netOutput)))
+        return netOutput * (1 - netOutput)
+        # return dot(transpose(netOutput), 1 - netOutput)
 
     @staticmethod
     def tanh(netOutput):
@@ -68,21 +70,17 @@ class Activation:
     @staticmethod
     def softmax(netOutput):
         # normalize with max(netOutput), because exp() is not stable
-        netOutput_exp = [exp(i - max(netOutput)) for i in netOutput]
-        sum_netOutput_exp = sum(netOutput_exp)
-        return [i / sum_netOutput_exp for i in netOutput_exp]
+        #netOutput_exp = [exp(i - netOutput.max()) for i in netOutput]
+        netOutput_exp = exp(netOutput - netOutput.max())
+        #sum_netOutput_exp = netOutput_exp.sum()
+        return netOutput_exp/ netOutput_exp.sum()
         
     @staticmethod
     def softmaxPrime(netOutput):
         # Implementation after explanation on https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative
-        # turns all the vectors entries to e^(entry + max)
-        outputPrime = map(lambda x: exp(x + max(netOutput)), netOutput)
-        # divides each entry by the sum of all entries
-        outputPrime = dot(outputPrime, 1/sum(outputPrime))
         # multiplies the vectors so we get the correct entries except for the diagonal
-        jacobian = dot(transpose(outputPrime), dot(outputPrime, -1))
+        jacobian = dot(transpose(atleast_2d(netOutput)), atleast_2d(netOutput)) - diag(netOutput)
         # fix the diagonal so we get the correct derivative
-        jacobian += diag(outputPrime)
         return jacobian
 
         """jacobian_matrix = diag(netOutput)

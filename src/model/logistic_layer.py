@@ -125,9 +125,7 @@ class LogisticLayer():
         # Or even more general: doesn't care which activation function is used
         # dado: derivative of activation function w.r.t the output
         dado = self.activationDerivative(self.outp)
-        # atleast_2d is used to cast the result to a 2d matrix to enable correct vector multiplication. This should not
-        # influence other code since the only other usage is in update weights and has been adapted.
-        self.deltas = np.atleast_2d(np.dot(np.dot(next_derivatives, next_weights), dado))
+        self.deltas = (dado * np.dot(next_derivatives, next_weights))
 
         # Or you can explicitly calculate the derivatives for two cases
         # Page 40 Back-propagation slides
@@ -148,11 +146,10 @@ class LogisticLayer():
 
         # weight updating as gradient descent principle
         for neuron in range(0, self.nOut):
-            # indexing of deltas has been adapted to handle the now matrix shaped deltas
             self.weights[:, neuron] -= (learningRate *
-                                        self.deltas[0,neuron] *
+                                        self.deltas[neuron] *
                                         self.inp)
-
+        
 
     def _fire(self, inp):
         return self.activation(np.dot(inp, self.weights))
